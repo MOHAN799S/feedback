@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Faculty Feedback Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(-45deg, #e0c3fc, #8ec5fc, #fbc2eb, #a6c1ee);
+      background-size: 400% 400%;
+      animation: gradientAnimation 15s ease infinite;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    @keyframes gradientAnimation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h1 {
+      color: #222;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.6);
+    }
+
+    .dashboard-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .section-card {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+      padding: 30px;
+      width: 500px;
+      max-width: 90%;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .section-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+    }
+
+    .section-card h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #111;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
+    }
+
+    .section-card.section-a {
+      background: rgba(240, 248, 255, 0.4);
+    }
+
+    .section-card.section-b {
+      background: rgba(255, 228, 225, 0.4);
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+    .charts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.chart-wrapper {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 20px;
+}
+
+.comments-section {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.comment-card {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.comment-rating {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.faculty-info {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(14px);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+  width: 100%;
+  max-width: 800px;
+}
+
+.logout-button {
+  background: linear-gradient(135deg, #ff758c, #ff7eb3);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.logout-button:hover {
+  opacity: 0.9;
+}
+
+.error-message, .no-data-message {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+  </style>
+</head>
+<body>
+
+  <h1>Faculty Feedback Dashboard</h1>
+
+  <div class="dashboard-container">
+    <!-- Section A -->
+    <div class="section-card section-a">
+      <h2>Section A</h2>
+      <canvas id="sectionAChart">
+        <div class="faculty-info">
+            <h2>Welcome, <span id="faculty-name">Loading...</span></h2>
+            <p>Subject: <span id="faculty-subject">Loading...</span></p>
+            <p>Section: <span id="faculty-section">Loading...</span></p>
+            <button id="logout-btn" class="logout-button">Logout</button>
+          </div>
+      </canvas>
+    </div>
+
+    <!-- Section B -->
+    <div class="section-card section-b">
+      <h2>Section B</h2>
+      <canvas id="sectionBChart">
+        <div class="faculty-info">
+            <h2>Welcome, <span id="faculty-name">Loading...</span></h2>
+            <p>Subject: <span id="faculty-subject">Loading...</span></p>
+            <p>Section: <span id="faculty-section">Loading...</span></p>
+            <button id="logout-btn" class="logout-button">Logout</button>
+          </div>
+      </canvas>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+  // Check for faculty authentication token
+  const facultyToken = localStorage.getItem('facultyToken');
+  const username = localStorage.getItem('facultyUsername');
+  const section = localStorage.getItem('facultySection');
+  
+  if (!facultyToken) {
+    // Redirect to login if no token found
+    window.location.href = '/faculty';
+    return;
+  }
+  
+  // Set up authentication headers
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${facultyToken}`
+  };
+  
+  // Load faculty dashboard data
+  loadDashboardData(headers);
+});
+
+async function loadDashboardData(headers) {
+  try {
+    // Fetch feedback data for the logged-in faculty
+    const response = await fetch('/faculty/feedback-data', {
+      method: 'GET',
+      headers: headers,
+      body: JSON.stringify({ username,section }),
+    });
+    
+    // Check if unauthorized (token expired or invalid)
+    if (response.status === 401) {
+      localStorage.removeItem('facultyToken');
+      window.location.href = '/faculty';
+      return;
+    }
+    
+    if (!response.ok) {
+      throw new Error('Failed to load dashboard data');
+    }
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.message || 'Unknown error occurred');
+    }
+    
+    // Display faculty info
+    document.getElementById('faculty-name').textContent = data.faculty.username;
+    document.getElementById('faculty-subject').textContent = data.faculty.subject;
+    document.getElementById('faculty-section').textContent = data.faculty.section;
+    
+    // Render dashboard with feedback data
+    renderDashboard(data.feedbackData);
+    
+  } catch (error) {
+    console.error('Error loading dashboard:', error);
+    document.querySelector('.dashboard-container').innerHTML = `
+      <div class="error-message">
+        <p>Error loading dashboard data: ${error.message}</p>
+        <button onclick="loadDashboardData()">Try Again</button>
+      </div>
+    `;
+  }
+}
+
+function renderDashboard(feedbackData) {
+  // Clear previous dashboard content
+  const dashboardContainer = document.querySelector('.dashboard-container');
+  dashboardContainer.innerHTML = '';
+  
+  if (!feedbackData || feedbackData.length === 0) {
+    dashboardContainer.innerHTML = `
+      <div class="no-data-message">
+        <p>No feedback data available yet.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Process feedback data
+  const categories = ['methodology', 'approachable', 'knowledge', 'rating'];
+  const categoryLabels = {
+    'methodology': 'Teaching Methodology',
+    'approachable': 'Approachability',
+    'knowledge': 'Subject Knowledge',
+    'rating': 'Overall Rating'
+  };
+  
+  // Calculate average ratings for each category
+  const ratingSummary = {};
+  const responseCount = feedbackData.length;
+  
+  // Initialize summary object
+  categories.forEach(category => {
+    ratingSummary[category] = {
+      counts: {},
+      average: 0
+    };
+  });
+  
+  // Process each feedback entry
+  feedbackData.forEach(feedback => {
+    // Process methodology (Excellent/Good/Average/Poor)
+    if (!ratingSummary.methodology.counts[feedback.methodology]) {
+      ratingSummary.methodology.counts[feedback.methodology] = 0;
+    }
+    ratingSummary.methodology.counts[feedback.methodology]++;
+    
+    // Process approachability (Always/Usually/Sometimes/Never)
+    if (!ratingSummary.approachable.counts[feedback.approachable]) {
+      ratingSummary.approachable.counts[feedback.approachable] = 0;
+    }
+    ratingSummary.approachable.counts[feedback.approachable]++;
+    
+    // Process knowledge (Excellent/Good/Average/Poor)
+    if (!ratingSummary.knowledge.counts[feedback.knowledge]) {
+      ratingSummary.knowledge.counts[feedback.knowledge] = 0;
+    }
+    ratingSummary.knowledge.counts[feedback.knowledge]++;
+    
+    // Process numeric rating (1-5)
+    const numericRating = parseInt(feedback.rating);
+    if (!isNaN(numericRating)) {
+      if (!ratingSummary.rating.counts[numericRating]) {
+        ratingSummary.rating.counts[numericRating] = 0;
+      }
+      ratingSummary.rating.counts[numericRating]++;
+      ratingSummary.rating.average += numericRating;
+    }
+  });
+  
+  // Calculate rating average
+  ratingSummary.rating.average /= responseCount;
+  
+  // Create section card
+  const sectionCard = document.createElement('div');
+  sectionCard.className = 'section-card';
+  
+  // Add faculty feedback summary
+  sectionCard.innerHTML = `
+    <h2>Feedback Summary</h2>
+    <p>Total Responses: ${responseCount}</p>
+    <div class="charts-container">
+      <div class="chart-wrapper">
+        <h3>${categoryLabels.rating}</h3>
+        <canvas id="overallRatingChart"></canvas>
+      </div>
+      <div class="chart-wrapper">
+        <h3>${categoryLabels.methodology}</h3>
+        <canvas id="methodologyChart"></canvas>
+      </div>
+      <div class="chart-wrapper">
+        <h3>${categoryLabels.approachable}</h3>
+        <canvas id="approachableChart"></canvas>
+      </div>
+      <div class="chart-wrapper">
+        <h3>${categoryLabels.knowledge}</h3>
+        <canvas id="knowledgeChart"></canvas>
+      </div>
+    </div>
+    
+    <h3>Comments</h3>
+    <div class="comments-section">
+      ${createCommentsSection(feedbackData)}
+    </div>
+  `;
+  
+  dashboardContainer.appendChild(sectionCard);
+  
+  // Render charts
+  createOverallRatingChart(ratingSummary.rating);
+  createPieChart('methodologyChart', ratingSummary.methodology.counts, 
+    ['#4e54c8', '#8f94fb', '#a8c0ff', '#d7dde8']);
+  createPieChart('approachableChart', ratingSummary.approachable.counts, 
+    ['#11998e', '#38ef7d', '#7fd3c1', '#d7dde8']);
+  createPieChart('knowledgeChart', ratingSummary.knowledge.counts, 
+    ['#FF57B9', '#FF9166', '#FFC152', '#d7dde8']);
+}
+
+function createCommentsSection(feedbackData) {
+  let commentsHTML = '';
+  
+  // Filter feedback with comments
+  const feedbackWithComments = feedbackData.filter(feedback => 
+    feedback.comments && feedback.comments.trim().length > 0
+  );
+  
+  if (feedbackWithComments.length === 0) {
+    return '<p class="no-comments">No comments provided yet.</p>';
+  }
+  
+  // Generate comments HTML
+  feedbackWithComments.forEach((feedback, index) => {
+    commentsHTML += `
+      <div class="comment-card">
+        <div class="comment-rating">
+          Rating: ${feedback.rating}/5
+        </div>
+        <div class="comment-text">
+          "${feedback.comments}"
+        </div>
+      </div>
+    `;
+  });
+  
+  return commentsHTML;
+}
+
+function createOverallRatingChart(ratingData) {
+  const ctx = document.getElementById('overallRatingChart').getContext('2d');
+  
+  // Create data for rating distribution
+  const labels = Object.keys(ratingData.counts).sort((a, b) => a - b);
+  const data = labels.map(rating => ratingData.counts[rating]);
+  
+  // Chart configuration
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Number of Ratings',
+        data: data,
+        backgroundColor: function(context) {
+          const chart = context.chart;
+          const {ctx, chartArea} = chart;
+          if (!chartArea) return null;
+          return createGradient(ctx, chartArea, '#6a11cb', '#2575fc');
+        },
+        borderRadius: 12
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: {
+        duration: 1000,
+        easing: 'easeOutQuart'
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: '#333'
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const value = context.parsed.y;
+              return `${value} student${value !== 1 ? 's' : ''}`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0,
+            color: '#333'
+          },
+          grid: {
+            color: 'rgba(0,0,0,0.1)'
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Rating (out of 5)'
+          },
+          ticks: {
+            color: '#333'
+          },
+          grid: {
+            color: 'rgba(0,0,0,0.05)'
+          }
+        }
+      }
+    }
+  });
+}
+
+function createPieChart(canvasId, data, colorPalette) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  
+  // Create data for pie chart
+  const labels = Object.keys(data);
+  const values = labels.map(label => data[label]);
+  
+  // Chart configuration
+  const chart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colorPalette.slice(0, labels.length),
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.8)'
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: {
+        duration: 1000,
+        easing: 'easeOutQuart'
+      },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#333',
+            padding: 15,
+            usePointStyle: true,
+            pointStyle: 'circle'
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.parsed || 0;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = Math.round((value * 100) / total) + '%';
+              return `${label}: ${value} (${percentage})`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function createGradient(ctx, area, colorStart, colorEnd) {
+  const gradient = ctx.createLinearGradient(0, area.bottom, 0, area.top);
+  gradient.addColorStop(0, colorStart);
+  gradient.addColorStop(1, colorEnd);
+  return gradient;
+}
+
+// Add logout functionality
+document.getElementById('logout-btn').addEventListener('click', function() {
+  localStorage.removeItem('facultyToken');
+  window.location.href = '/faculty/login.html';
+});
+  </script>
+</body>
+</html>
