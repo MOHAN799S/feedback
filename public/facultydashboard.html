@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Faculty Feedback Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
   <style>
     body {
       margin: 0;
@@ -15,6 +16,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
     }
 
     @keyframes gradientAnimation {
@@ -27,6 +29,9 @@
       color: #222;
       margin-bottom: 30px;
       text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.6);
+      font-size: 2.5rem;
+      letter-spacing: 1px;
+      text-align: center;
     }
 
     .dashboard-container {
@@ -35,6 +40,60 @@
       gap: 40px;
       justify-content: center;
       width: 100%;
+      max-width: 1200px;
+    }
+
+    .faculty-header {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      padding: 20px 30px;
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 40px;
+      text-align: center;
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .faculty-info {
+      flex-grow: 1;
+      text-align: center;
+    }
+
+    .faculty-info h2 {
+      margin-bottom: 10px;
+      color: #111;
+      font-size: 1.8rem;
+    }
+
+    .faculty-info p {
+      margin: 5px 0;
+      color: #333;
+      font-size: 1.1rem;
+    }
+
+    .logout-button {
+      background: linear-gradient(135deg, #ff758c, #ff7eb3);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(255, 117, 140, 0.5);
+      margin-left: 20px;
+    }
+
+    .logout-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(255, 117, 140, 0.6);
     }
 
     .section-card {
@@ -44,9 +103,10 @@
       border-radius: 20px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
       padding: 30px;
-      width: 500px;
-      max-width: 90%;
+      width: 100%;
+      max-width: 1000px;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
+      margin-bottom: 40px;
     }
 
     .section-card:hover {
@@ -56,467 +116,632 @@
 
     .section-card h2 {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       color: #111;
       text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
+      font-size: 1.8rem;
+      position: relative;
+      padding-bottom: 15px;
     }
 
-    .section-card.section-a {
-      background: rgba(240, 248, 255, 0.4);
+    .section-card h2:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(to right, #ff758c, #ff7eb3);
+      border-radius: 3px;
     }
 
-    .section-card.section-b {
-      background: rgba(255, 228, 225, 0.4);
+    .chart-wrapper {
+      width: 100%;
+      height: 400px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 
-    canvas {
-      width: 100% !important;
-      height: auto !important;
-    }
     .charts-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 30px;
-  margin-bottom: 30px;
-}
+      width: 100%;
+      margin-bottom: 40px;
+    }
 
-.chart-wrapper {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 15px;
-  padding: 20px;
-}
+    .chart-card {
+      margin-bottom: 30px;
+    }
 
-.comments-section {
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 10px;
-}
+    .chart-card h3 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.4rem;
+      color: #333;
+      text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
+    }
 
-.comment-card {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 15px;
-}
+    .comments-section {
+      max-height: 500px;
+      overflow-y: auto;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
+    }
 
-.comment-rating {
-  font-weight: bold;
-  margin-bottom: 8px;
-}
+    .comments-section::-webkit-scrollbar {
+      width: 8px;
+    }
 
-.faculty-info {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(14px);
-  border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 30px;
-  text-align: center;
-  width: 100%;
-  max-width: 800px;
-}
+    .comments-section::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.5);
+      border-radius: 4px;
+    }
 
-.logout-button {
-  background: linear-gradient(135deg, #ff758c, #ff7eb3);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-top: 10px;
-}
+    .comments-section h3 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.4rem;
+      color: #333;
+      text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
+    }
 
-.logout-button:hover {
-  opacity: 0.9;
-}
+    .comment-card {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-left: 4px solid;
+    }
 
-.error-message, .no-data-message {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-}
+    .comment-card:nth-child(odd) {
+      border-left-color: #ff758c;
+    }
+
+    .comment-card:nth-child(even) {
+      border-left-color: #8ec5fc;
+    }
+
+    .comment-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .comment-rating {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #333;
+    }
+
+    .comment-rating i {
+      color: #ffcc00;
+      margin-right: 5px;
+    }
+
+    .comment-body {
+      margin-bottom: 15px;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .comment-ratings {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .micro-rating {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: #333;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s ease;
+    }
+
+    .micro-rating:hover {
+      transform: translateY(-2px);
+    }
+
+    .error-message, .no-data-message {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    }
+
+    .no-comments {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    .dashboard-content {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      body {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .faculty-header {
+        flex-direction: column;
+        padding: 20px;
+      }
+
+      .logout-button {
+        margin-left: 0;
+        margin-top: 15px;
+      }
+
+      .section-card {
+        padding: 20px;
+      }
+
+      .section-card h2 {
+        font-size: 1.5rem;
+      }
+
+      .chart-wrapper {
+        height: 300px;
+      }
+
+      .comment-card {
+        padding: 15px;
+      }
+
+      .micro-rating {
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section-card, .faculty-header {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .section-card:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .section-card:nth-child(3) {
+      animation-delay: 0.4s;
+    }
   </style>
 </head>
 <body>
 
   <h1>Faculty Feedback Dashboard</h1>
 
-  <div class="dashboard-container">
-    <!-- Section A -->
-    <div class="section-card section-a">
-      <h2>Section A</h2>
-      <canvas id="sectionAChart">
-        <div class="faculty-info">
-            <h2>Welcome, <span id="faculty-name">Loading...</span></h2>
-            <p>Subject: <span id="faculty-subject">Loading...</span></p>
-            <p>Section: <span id="faculty-section">Loading...</span></p>
-            <button id="logout-btn" class="logout-button">Logout</button>
-          </div>
-      </canvas>
+  <!-- Faculty Header with Info and Logout Button -->
+  <div class="faculty-header">
+    <div class="faculty-info">
+      <h2>Welcome, <span id="faculty-name">Loading...</span></h2>
+      <p>Subject: <span id="faculty-subject">Loading...</span></p>
+      <p>Section: <span id="faculty-section">Loading...</span></p>
     </div>
+    <button id="logout-btn" class="logout-button">Logout</button>
+  </div>
 
-    <!-- Section B -->
-    <div class="section-card section-b">
-      <h2>Section B</h2>
-      <canvas id="sectionBChart">
-        <div class="faculty-info">
-            <h2>Welcome, <span id="faculty-name">Loading...</span></h2>
-            <p>Subject: <span id="faculty-subject">Loading...</span></p>
-            <p>Section: <span id="faculty-section">Loading...</span></p>
-            <button id="logout-btn" class="logout-button">Logout</button>
-          </div>
-      </canvas>
-    </div>
+  <div class="dashboard-container">
+    <!-- Dashboard content will be inserted here by JavaScript -->
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-  // Check for faculty authentication token
-  const facultyToken = localStorage.getItem('facultyToken');
-  const username = localStorage.getItem('facultyUsername');
-  const section = localStorage.getItem('facultySection');
-  
-  if (!facultyToken) {
-    // Redirect to login if no token found
-    window.location.href = '/faculty';
-    return;
-  }
-  
-  // Set up authentication headers
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${facultyToken}`
-  };
-  
-  // Load faculty dashboard data
-  loadDashboardData(headers);
-});
+      // Check for faculty authentication token
+      const facultyToken = localStorage.getItem('facultyToken');
+      const username = localStorage.getItem('facultyUsername');
+      const section = localStorage.getItem('facultySection');
+      const facultyId = localStorage.getItem('facultyId');
+      
+      if (!facultyToken) {
+        // Redirect to login if no token found
+        window.location.href = '/faculty';
+        return;
+      }
+      
+      // Set up authentication headers
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${facultyToken}`
+      };
+      
+      // Load faculty dashboard data
+      loadDashboardData(headers);
+      
+      // Add logout functionality
+      document.getElementById('logout-btn').addEventListener('click', function() {
+        try{
+          // Clear local storage and redirect to login page
+          const logoutResponse = fetch('/faculty/logout', {
+            method: 'POST',
+            headers: headers,
+            credentials: 'include'
+          });
 
-async function loadDashboardData(headers) {
-  try {
-    // Fetch feedback data for the logged-in faculty
-    const response = await fetch('/faculty/feedback-data', {
-      method: 'GET',
-      headers: headers,
-      body: JSON.stringify({ username,section }),
+          logoutResponse.then(response => {
+            if (response.ok) {
+              localStorage.removeItem('facultyToken');
+              localStorage.removeItem('facultyUsername');
+              localStorage.removeItem('facultySection');
+              localStorage.removeItem('facultyId');
+              setTimeout(() => {
+                window.location.href = '/faculty';
+              }, 2000); 
+            } else {
+              alert('Logout failed. Please try again.');
+            }
+          });
+
+        } catch (error) {
+          console.error('Error during logout:', error);
+          alert('An error occurred while logging out. Please try again.');
+        }
+      });
     });
-    
-    // Check if unauthorized (token expired or invalid)
-    if (response.status === 401) {
-      localStorage.removeItem('facultyToken');
-      window.location.href = '/faculty';
-      return;
-    }
-    
-    if (!response.ok) {
-      throw new Error('Failed to load dashboard data');
-    }
-    
-    const data = await response.json();
-    
-    if (!data.success) {
-      throw new Error(data.message || 'Unknown error occurred');
-    }
-    
-    // Display faculty info
-    document.getElementById('faculty-name').textContent = data.faculty.username;
-    document.getElementById('faculty-subject').textContent = data.faculty.subject;
-    document.getElementById('faculty-section').textContent = data.faculty.section;
-    
-    // Render dashboard with feedback data
-    renderDashboard(data.feedbackData);
-    
-  } catch (error) {
-    console.error('Error loading dashboard:', error);
-    document.querySelector('.dashboard-container').innerHTML = `
-      <div class="error-message">
-        <p>Error loading dashboard data: ${error.message}</p>
-        <button onclick="loadDashboardData()">Try Again</button>
-      </div>
-    `;
-  }
-}
 
-function renderDashboard(feedbackData) {
-  // Clear previous dashboard content
-  const dashboardContainer = document.querySelector('.dashboard-container');
-  dashboardContainer.innerHTML = '';
-  
-  if (!feedbackData || feedbackData.length === 0) {
-    dashboardContainer.innerHTML = `
-      <div class="no-data-message">
-        <p>No feedback data available yet.</p>
-      </div>
-    `;
-    return;
-  }
-  
-  // Process feedback data
-  const categories = ['methodology', 'approachable', 'knowledge', 'rating'];
-  const categoryLabels = {
-    'methodology': 'Teaching Methodology',
-    'approachable': 'Approachability',
-    'knowledge': 'Subject Knowledge',
-    'rating': 'Overall Rating'
-  };
-  
-  // Calculate average ratings for each category
-  const ratingSummary = {};
-  const responseCount = feedbackData.length;
-  
-  // Initialize summary object
-  categories.forEach(category => {
-    ratingSummary[category] = {
-      counts: {},
-      average: 0
-    };
-  });
-  
-  // Process each feedback entry
-  feedbackData.forEach(feedback => {
-    // Process methodology (Excellent/Good/Average/Poor)
-    if (!ratingSummary.methodology.counts[feedback.methodology]) {
-      ratingSummary.methodology.counts[feedback.methodology] = 0;
-    }
-    ratingSummary.methodology.counts[feedback.methodology]++;
-    
-    // Process approachability (Always/Usually/Sometimes/Never)
-    if (!ratingSummary.approachable.counts[feedback.approachable]) {
-      ratingSummary.approachable.counts[feedback.approachable] = 0;
-    }
-    ratingSummary.approachable.counts[feedback.approachable]++;
-    
-    // Process knowledge (Excellent/Good/Average/Poor)
-    if (!ratingSummary.knowledge.counts[feedback.knowledge]) {
-      ratingSummary.knowledge.counts[feedback.knowledge] = 0;
-    }
-    ratingSummary.knowledge.counts[feedback.knowledge]++;
-    
-    // Process numeric rating (1-5)
-    const numericRating = parseInt(feedback.rating);
-    if (!isNaN(numericRating)) {
-      if (!ratingSummary.rating.counts[numericRating]) {
-        ratingSummary.rating.counts[numericRating] = 0;
+    async function loadDashboardData(headers) {
+      try {
+        // Fetch feedback data for the logged-in faculty
+        const response = await fetch('/faculty/feedback-data', {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({
+            facultyId: localStorage.getItem('facultyId')
+          }),
+          credentials: 'include'
+        });
+        
+        // Check if unauthorized (token expired or invalid)
+        if (response.status === 401) {
+          localStorage.removeItem('facultyToken');
+          window.location.href = '/faculty';
+          return;
+        }
+        
+        if (!response.ok) {
+          throw new Error('Failed to load dashboard data');
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.message || 'Unknown error occurred');
+        }
+        
+        // Display faculty info
+        document.getElementById('faculty-name').textContent = localStorage.getItem('facultyUsername');
+        document.getElementById('faculty-subject').textContent = data.faculty?.subject || 'Not specified';
+        document.getElementById('faculty-section').textContent = data.faculty?.section || localStorage.getItem('facultySection') || 'Not specified';
+        
+        // Render the dashboard with the feedback data
+        renderDashboard(data.feedbackData);
+        
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+        document.querySelector('.dashboard-container').innerHTML = ` 
+          <div class="error-message">
+            <p>Error loading dashboard data: ${error.message}</p>
+            <button onclick="window.location.reload()">Try Again</button>
+          </div>
+        `;
       }
-      ratingSummary.rating.counts[numericRating]++;
-      ratingSummary.rating.average += numericRating;
     }
-  });
-  
-  // Calculate rating average
-  ratingSummary.rating.average /= responseCount;
-  
-  // Create section card
-  const sectionCard = document.createElement('div');
-  sectionCard.className = 'section-card';
-  
-  // Add faculty feedback summary
-  sectionCard.innerHTML = `
-    <h2>Feedback Summary</h2>
-    <p>Total Responses: ${responseCount}</p>
-    <div class="charts-container">
-      <div class="chart-wrapper">
-        <h3>${categoryLabels.rating}</h3>
-        <canvas id="overallRatingChart"></canvas>
-      </div>
-      <div class="chart-wrapper">
-        <h3>${categoryLabels.methodology}</h3>
-        <canvas id="methodologyChart"></canvas>
-      </div>
-      <div class="chart-wrapper">
-        <h3>${categoryLabels.approachable}</h3>
-        <canvas id="approachableChart"></canvas>
-      </div>
-      <div class="chart-wrapper">
-        <h3>${categoryLabels.knowledge}</h3>
-        <canvas id="knowledgeChart"></canvas>
-      </div>
-    </div>
-    
-    <h3>Comments</h3>
-    <div class="comments-section">
-      ${createCommentsSection(feedbackData)}
-    </div>
-  `;
-  
-  dashboardContainer.appendChild(sectionCard);
-  
-  // Render charts
-  createOverallRatingChart(ratingSummary.rating);
-  createPieChart('methodologyChart', ratingSummary.methodology.counts, 
-    ['#4e54c8', '#8f94fb', '#a8c0ff', '#d7dde8']);
-  createPieChart('approachableChart', ratingSummary.approachable.counts, 
-    ['#11998e', '#38ef7d', '#7fd3c1', '#d7dde8']);
-  createPieChart('knowledgeChart', ratingSummary.knowledge.counts, 
-    ['#FF57B9', '#FF9166', '#FFC152', '#d7dde8']);
-}
 
-function createCommentsSection(feedbackData) {
-  let commentsHTML = '';
-  
-  // Filter feedback with comments
-  const feedbackWithComments = feedbackData.filter(feedback => 
-    feedback.comments && feedback.comments.trim().length > 0
-  );
-  
-  if (feedbackWithComments.length === 0) {
-    return '<p class="no-comments">No comments provided yet.</p>';
-  }
-  
-  // Generate comments HTML
-  feedbackWithComments.forEach((feedback, index) => {
-    commentsHTML += `
-      <div class="comment-card">
-        <div class="comment-rating">
-          Rating: ${feedback.rating}/5
+    function renderDashboard(feedbackData) {
+      const dashboardContainer = document.querySelector('.dashboard-container');
+      
+      if (!feedbackData || feedbackData.length === 0) {
+        dashboardContainer.innerHTML = `
+          <div class="no-data-message">
+            <p>No feedback data available yet.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // Initialize dashboard structure
+      dashboardContainer.innerHTML = '';
+      
+      // Initialize rating summary object
+      const ratingSummary = {
+        teach: {
+          total: 0,
+          average: 0,
+          counts: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        },
+        depth: {
+          total: 0,
+          average: 0,
+          counts: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        },
+        resource: {
+          total: 0,
+          average: 0,
+          counts: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        },
+        assignment: {
+          total: 0,
+          average: 0,
+          counts: {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+        }
+      };
+      
+      // Count total number of ratings
+      let ratingCount = 0;
+      
+      // Process each feedback entry for ratings
+      feedbackData.forEach(feedback => {
+        // Process teaching quality ratings
+        const teachRating = parseInt(feedback.teach);
+        if (!isNaN(teachRating)) {
+          ratingSummary.teach.total += teachRating;
+          ratingSummary.teach.counts[teachRating]++;
+          ratingCount++;
+        }
+        
+        // Process depth ratings
+        const depthRating = parseInt(feedback.depth);
+        if (!isNaN(depthRating)) {
+          ratingSummary.depth.total += depthRating;
+          ratingSummary.depth.counts[depthRating]++;
+        }
+        
+        // Process resource ratings
+        const resourceRating = parseInt(feedback.resource);
+        if (!isNaN(resourceRating)) {
+          ratingSummary.resource.total += resourceRating;
+          ratingSummary.resource.counts[resourceRating]++;
+        }
+        
+        // Process assignment ratings
+        const assignmentRating = parseInt(feedback.assignment);
+        if (!isNaN(assignmentRating)) {
+          ratingSummary.assignment.total += assignmentRating;
+          ratingSummary.assignment.counts[assignmentRating]++;
+        }
+      });
+      
+      // Calculate averages
+      ratingSummary.teach.average = ratingCount > 0 ? (ratingSummary.teach.total / ratingCount).toFixed(1) : "0.0";
+      ratingSummary.depth.average = ratingCount > 0 ? (ratingSummary.depth.total / ratingCount).toFixed(1) : "0.0";
+      ratingSummary.resource.average = ratingCount > 0 ? (ratingSummary.resource.total / ratingCount).toFixed(1) : "0.0";
+      ratingSummary.assignment.average = ratingCount > 0 ? (ratingSummary.assignment.total / ratingCount).toFixed(1) : "0.0";
+      
+      // Create rating distribution section
+      const ratingSection = document.createElement('div');
+      ratingSection.className = 'section-card';
+      ratingSection.innerHTML = `
+        <h2>Rating Distribution</h2>
+        <div class="chart-wrapper">
+          <canvas id="ratingsChart"></canvas>
         </div>
-        <div class="comment-text">
-          "${feedback.comments}"
+      `;
+      
+      dashboardContainer.appendChild(ratingSection);
+      
+      // Create comments section
+      const commentsSection = document.createElement('div');
+      commentsSection.className = 'section-card';
+      commentsSection.innerHTML = `
+        <h2>Student Feedback</h2>
+        <div class="comments-section">
+          ${createCommentsHTML(feedbackData)}
         </div>
-      </div>
-    `;
-  });
-  
-  return commentsHTML;
-}
-
-function createOverallRatingChart(ratingData) {
-  const ctx = document.getElementById('overallRatingChart').getContext('2d');
-  
-  // Create data for rating distribution
-  const labels = Object.keys(ratingData.counts).sort((a, b) => a - b);
-  const data = labels.map(rating => ratingData.counts[rating]);
-  
-  // Chart configuration
-  const chart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Number of Ratings',
-        data: data,
-        backgroundColor: function(context) {
-          const chart = context.chart;
-          const {ctx, chartArea} = chart;
-          if (!chartArea) return null;
-          return createGradient(ctx, chartArea, '#6a11cb', '#2575fc');
-        },
-        borderRadius: 12
-      }]
-    },
-    options: {
-      responsive: true,
-      animation: {
-        duration: 1000,
-        easing: 'easeOutQuart'
-      },
-      plugins: {
-        legend: {
-          labels: {
-            color: '#333'
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const value = context.parsed.y;
-              return `${value} student${value !== 1 ? 's' : ''}`;
-            }
-          }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            precision: 0,
-            color: '#333'
-          },
-          grid: {
-            color: 'rgba(0,0,0,0.1)'
-          }
-        },
-        x: {
-          title: {
-            display: true,
-            text: 'Rating (out of 5)'
-          },
-          ticks: {
-            color: '#333'
-          },
-          grid: {
-            color: 'rgba(0,0,0,0.05)'
-          }
-        }
-      }
+      `;
+      
+      dashboardContainer.appendChild(commentsSection);
+      
+      // Create the rating distribution chart with enhanced styling
+      createRatingDistributionChart(ratingSummary);
     }
-  });
-}
 
-function createPieChart(canvasId, data, colorPalette) {
-  const ctx = document.getElementById(canvasId).getContext('2d');
-  
-  // Create data for pie chart
-  const labels = Object.keys(data);
-  const values = labels.map(label => data[label]);
-  
-  // Chart configuration
-  const chart = new Chart(ctx, {
-    type: 'pie',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: values,
-        backgroundColor: colorPalette.slice(0, labels.length),
-        borderWidth: 2,
-        borderColor: 'rgba(255, 255, 255, 0.8)'
-      }]
-    },
-    options: {
-      responsive: true,
-      animation: {
-        duration: 1000,
-        easing: 'easeOutQuart'
-      },
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            color: '#333',
-            padding: 15,
-            usePointStyle: true,
-            pointStyle: 'circle'
-          }
+    function createCommentsHTML(feedbackData) {
+      const commentsData = feedbackData.filter(item => item.comments && item.comments.trim() !== '');
+      
+      if (commentsData.length === 0) {
+        return '<p class="no-comments">No comments available yet.</p>';
+      }
+      
+      let commentsHTML = '';
+      
+      commentsData.forEach(item => {
+        const teachRating = item.teach || 'N/A';
+        const depthRating = item.depth || 'N/A';
+        const resourceRating = item.resource || 'N/A';
+        const assignmentRating = item.assignment || 'N/A';
+        
+        const averageRating = (
+          (parseInt(teachRating) + parseInt(depthRating) + 
+           parseInt(resourceRating) + parseInt(assignmentRating)) / 4
+        ).toFixed(1);
+        
+        commentsHTML += `
+          <div class="comment-card">
+            <div class="comment-header">
+              <div class="comment-rating">
+                <i class="fas fa-star"></i> ${averageRating}/5
+              </div>
+            </div>
+            <div class="comment-body">
+              <p>${item.comments}</p>
+            </div>
+            <div class="comment-ratings">
+              <span class="micro-rating"><i class="fas fa-chalkboard-teacher"></i> Teaching: ${teachRating}/5</span>
+              <span class="micro-rating"><i class="fas fa-brain"></i> Depth: ${depthRating}/5</span>
+              <span class="micro-rating"><i class="fas fa-book"></i> Resources: ${resourceRating}/5</span>
+              <span class="micro-rating"><i class="fas fa-tasks"></i> Assignments: ${assignmentRating}/5</span>
+            </div>
+          </div>
+        `;
+      });
+      
+      return commentsHTML;
+    }
+
+    function createRatingDistributionChart(ratingSummary) {
+      const ctx = document.getElementById('ratingsChart').getContext('2d');
+      
+      // Prepare the data for the chart
+      const categories = ['Teaching Quality', 'Subject Depth', 'Learning Resources', 'Assignment Quality'];
+      const ratings = [1, 2, 3, 4, 5];
+      
+      // Create datasets for each rating value with enhanced colors and styling
+      const datasets = ratings.map(rating => {
+        return {
+          label: `${rating} Star${rating !== 1 ? 's' : ''}`,
+          data: [
+            ratingSummary.teach.counts[rating] || 0,
+            ratingSummary.depth.counts[rating] || 0,
+            ratingSummary.resource.counts[rating] || 0,
+            ratingSummary.assignment.counts[rating] || 0
+          ],
+          backgroundColor: getEnhancedColorForRating(rating, 0.7),
+          borderColor: getEnhancedColorForRating(rating, 1),
+          borderWidth: 2,
+          borderRadius: 6,
+          barPercentage: 0.8,
+          categoryPercentage: 0.8
+        };
+      });
+      
+      // Create the chart with enhanced styling
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: categories,
+          datasets: datasets
         },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const label = context.label || '';
-              const value = context.parsed || 0;
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = Math.round((value * 100) / total) + '%';
-              return `${label}: ${value} (${percentage})`;
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                boxWidth: 15,
+                padding: 15,
+                font: {
+                  size: 12,
+                  family: "'Segoe UI', sans-serif"
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              titleColor: '#333',
+              bodyColor: '#333',
+              titleFont: {
+                size: 14,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 13
+              },
+              padding: 12,
+              cornerRadius: 8,
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  const value = context.raw;
+                  const percentage = value > 0 ? 
+                    ((value / getTotalForCategory(context.datasetIndex, context.dataset.data)) * 100).toFixed(1) + '%' 
+                    : '0%';
+                  return `${context.dataset.label}: ${value} (${percentage})`;
+                }
+              }
             }
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                font: {
+                  size: 12
+                }
+              }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0,
+                font: {
+                  size: 12
+                }
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              }
+            }
+          },
+          animation: {
+            duration: 1000,
+            easing: 'easeOutQuart'
           }
         }
-      }
+      });
     }
-  });
-}
 
-function createGradient(ctx, area, colorStart, colorEnd) {
-  const gradient = ctx.createLinearGradient(0, area.bottom, 0, area.top);
-  gradient.addColorStop(0, colorStart);
-  gradient.addColorStop(1, colorEnd);
-  return gradient;
-}
+    function getTotalForCategory(index, data) {
+      let total = 0;
+      for (let i = 0; i < data.length; i++) {
+        total += data[i];
+      }
+      return total > 0 ? total : 1; // Avoid division by zero
+    }
 
-// Add logout functionality
-document.getElementById('logout-btn').addEventListener('click', function() {
-  localStorage.removeItem('facultyToken');
-  window.location.href = '/faculty/login.html';
-});
+    function getEnhancedColorForRating(rating, alpha) {
+      const colors = {
+        1: `rgba(239, 71, 111, ${alpha})`,      // Red (improved)
+        2: `rgba(255, 140, 66, ${alpha})`,      // Orange (improved)
+        3: `rgba(255, 209, 102, ${alpha})`,     // Yellow (improved)
+        4: `rgba(86, 204, 157, ${alpha})`,      // Green (improved)
+        5: `rgba(17, 138, 178, ${alpha})`       // Blue (improved)
+      };
+      
+      return colors[rating] || `rgba(201, 203, 207, ${alpha})`;
+    }
   </script>
 </body>
 </html>

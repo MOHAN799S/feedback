@@ -209,6 +209,7 @@ body {
       localStorage.setItem('facultyUsername', username);
       localStorage.setItem('facultySection', section);
       localStorage.setItem('facultyToken', data.token);
+      localStorage.setItem('facultyId', data.faculty.id);
       showAlert('success', 'faculty-success-alert', 'Login successful! Redirecting...');
       setTimeout(() => {
         window.location.href = '/facultydashboard.html';

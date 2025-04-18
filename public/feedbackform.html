@@ -153,7 +153,7 @@
             background-color: rgba(255, 255, 255, 0.6);
         }
         
-        .registration-container button {
+        .btn {
             width: 60%;
             padding: 1rem;
             margin: 2rem auto 1rem;
@@ -167,7 +167,7 @@
             box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
         }
         
-        .registration-container button:hover {
+        .btn:hover {
             opacity: 0.9;
         }
 
@@ -212,6 +212,28 @@
             font-weight: 600;
         }
         
+        .progress-bar {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            margin: 1rem 0 2rem;
+            height: 8px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4481fa, #6a11cb);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .faculty-counter {
+            font-size: 0.9rem;
+            color: rgba(0, 0, 0, 0.7);
+            margin-bottom: 1rem;
+        }
+        
         @media (max-width: 480px) {
             .registration-container {
                 width: 90%;
@@ -227,245 +249,564 @@
             <span id="section-display">Section: Loading...</span>
         </div>
         
+        <div class="progress-bar">
+            <div id="progress" class="progress" style="width: 0%"></div>
+        </div>
+        <div class="faculty-counter">
+            <span id="faculty-counter">Faculty 0 of 0</span>
+        </div>
+        
         <div id="faculty-container">
             <p>Loading faculty data...</p>
         </div>
 
-        <button id="submit-feedback">Submit Feedback</button>
+        <button id="next-button" class="btn">Next</button>
         <p id="errorMessage"></p>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const facultyData = JSON.parse(localStorage.getItem('facultyData') || '[]');
-            const section = localStorage.getItem('section');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const facultyData = JSON.parse(localStorage.getItem('facultyData') || '[]');
+    const section = localStorage.getItem('section');
+    const feedbackId = localStorage.getItem('Feedback_id');
+    
+    // Add custom CSS for enhanced radio buttons
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 10px 0;
+        }
+        
+        .radio-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 8px 15px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-weight: 500;
+            min-width: 90px;
+            overflow: hidden;
+        }
+        
+        .radio-label:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+        
+        .radio-label input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        /* Specific classes for checked state */
+        .radio-label.excellent input:checked ~ span {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+        
+        .radio-label.good input:checked ~ span {
+            color: #2196F3;
+            font-weight: 600;
+        }
+        
+        .radio-label.average input:checked ~ span {
+            color: #FFC107;
+            font-weight: 600;
+        }
+        
+        .radio-label.poor input:checked ~ span {
+            color: #F44336;
+            font-weight: 600;
+        }
+        
+        .radio-label.always input:checked ~ span {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+        
+        .radio-label.usually input:checked ~ span {
+            color: #2196F3;
+            font-weight: 600;
+        }
+        
+        .radio-label.sometimes input:checked ~ span {
+            color: #FFC107;
+            font-weight: 600;
+        }
+        
+        .radio-label.never input:checked ~ span {
+            color: #F44336;
+            font-weight: 600;
+        }
+        
+        /* General checked state styling */
+        .radio-label input:checked ~ span::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            z-index: -1;
+        }
+        
+        .radio-label input:checked ~ .checkmark {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .radio-label .checkmark {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%) scale(0);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .radio-label input:checked {
+            background-color: white;
+        }
+        
+        /* Bottom borders */
+        .radio-label.excellent {
+            border-bottom: 3px solid #4CAF50;
+        }
+        
+        .radio-label.good {
+            border-bottom: 3px solid #2196F3;
+        }
+        
+        .radio-label.average {
+            border-bottom: 3px solid #FFC107;
+        }
+        
+        .radio-label.poor {
+            border-bottom: 3px solid #F44336;
+        }
+        
+        .radio-label.always {
+            border-bottom: 3px solid #4CAF50;
+        }
+        
+        .radio-label.usually {
+            border-bottom: 3px solid #2196F3;
+        }
+        
+        .radio-label.sometimes {
+            border-bottom: 3px solid #FFC107;
+        }
+        
+        .radio-label.never {
+            border-bottom: 3px solid #F44336;
+        }
+        
+        /* Enhanced checked state */
+        .radio-label input:checked ~ .background {
+            opacity: 1;
+        }
+        
+        .radio-label .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+            border-radius: 4px;
+        }
+        
+        .radio-label.excellent input:checked ~ .background {
+            background: linear-gradient(145deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.2));
+            box-shadow: 0 0 0 2px #4CAF50;
+        }
+        
+        .radio-label.good input:checked ~ .background {
+            background: linear-gradient(145deg, rgba(33, 150, 243, 0.1), rgba(33, 150, 243, 0.2));
+            box-shadow: 0 0 0 2px #2196F3;
+        }
+        
+        .radio-label.average input:checked ~ .background {
+            background: linear-gradient(145deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.2));
+            box-shadow: 0 0 0 2px #FFC107;
+        }
+        
+        .radio-label.poor input:checked ~ .background {
+            background: linear-gradient(145deg, rgba(244, 67, 54, 0.1), rgba(244, 67, 54, 0.2));
+            box-shadow: 0 0 0 2px #F44336;
+        }
+        
+        .radio-label.always input:checked ~ .background {
+            background: linear-gradient(145deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.2));
+            box-shadow: 0 0 0 2px #4CAF50;
+        }
+        
+        .radio-label.usually input:checked ~ .background {
+            background: linear-gradient(145deg, rgba(33, 150, 243, 0.1), rgba(33, 150, 243, 0.2));
+            box-shadow: 0 0 0 2px #2196F3;
+        }
+        
+        .radio-label.sometimes input:checked ~ .background {
+            background: linear-gradient(145deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.2));
+            box-shadow: 0 0 0 2px #FFC107;
+        }
+        
+        .radio-label.never input:checked ~ .background {
+            background: linear-gradient(145deg, rgba(244, 67, 54, 0.1), rgba(244, 67, 54, 0.2));
+            box-shadow: 0 0 0 2px #F44336;
+        }
+        
+        .radio-label span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Enhanced star rating */
+        .rating-container {
+            margin: 20px 0;
+        }
+        
+        .rating-stars {
+            display: inline-flex;
+            gap: 5px;
+        }
+        
+        .star {
+            font-size: 24px;
+            color: #ccc;
+            cursor: pointer;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+        
+        .star:hover {
+            transform: scale(1.2);
+            color: #FFC107;
+        }
+        
+        .star.active {
+            color: #FFC107;
+        }
+    `;
+    document.head.appendChild(styleElement);
+    
+    if (!facultyData.length) {
+        alert('Please enter a valid passkey first');
+        window.location.href = '/student'; 
+        return;
+    }
+    
+    document.getElementById('section-display').textContent = `Section: ${section}`;
+    
+    // Initialize the current faculty index
+    let currentFacultyIndex = 0;
+    const collectedFeedback = [];
+    
+    // Initialize progress counter
+    updateProgress(currentFacultyIndex, facultyData.length);
+    
+    // Display the first faculty
+    displayCurrentFaculty();
+    
+    // Add event listener to next/submit button
+    document.getElementById('next-button').addEventListener('click', handleNextOrSubmit);
+    
+    function displayCurrentFaculty() {
+        const faculty = facultyData[currentFacultyIndex];
+        const container = document.getElementById('faculty-container');
+        
+        // Update button text based on whether this is the last faculty
+        const nextButton = document.getElementById('next-button');
+        if (currentFacultyIndex === facultyData.length - 1) {
+            nextButton.textContent = 'Submit Feedback';
+        } else {
+            nextButton.textContent = 'Next';
+        }
+        
+        // Clear the container
+        container.innerHTML = '';
+        
+        // Create elements for the current faculty member
+        const facultyDiv = document.createElement('div');
+        facultyDiv.className = 'faculty-item';
+        facultyDiv.setAttribute('data-faculty-id', faculty._id);
+        
+        facultyDiv.innerHTML = `
+            <div class="faculty-header">
+                <h2 class="faculty-name">${faculty.username}</h2>
+            </div>
+            <p class="faculty-subject">Subject: ${faculty.subject}</p>
             
-            if (!facultyData.length) {
-                alert('Please enter a valid passkey first');
-                window.location.href = '/student'; 
-                return;
-            }
+            <div class="input-group">
+                <label>How clear and effective is the faculty’s teaching?</label>
+                <div class="radio-group">
+                    <label class="radio-label excellent">
+                        <input type="radio" name="methodology" value="Excellent" required>
+                        <span>Excellent</span>
+                        <div class="checkmark">✓</div>
+                        <div class="background"></div>
+                    </label>
+                    <label class="radio-label good">
+                        <input type="radio" name="methodology" value="Good">
+                        <span>Good</span>
+                        <div class="checkmark">✓</div>
+                        <div class="background"></div>
+                    </label>
+                    <label class="radio-label average">
+                        <input type="radio" name="methodology" value="Average">
+                        <span>Average</span>
+                        <div class="checkmark">✓</div>
+                        <div class="background"></div>
+                    </label>
+                    <label class="radio-label poor">
+                        <input type="radio" name="methodology" value="Poor">
+                        <span>Poor</span>
+                        <div class="checkmark">✓</div>
+                        <div class="background"></div>
+                    </label>
+                </div>
+            </div>
             
-            document.getElementById('section-display').textContent = `Section: ${section}`;
-  
-            displayFaculty(facultyData);
-
-            // Add event listener to submit button
-            document.getElementById('submit-feedback').addEventListener('click', submitFeedback);
+            <div class="input-group">
+                <label>2. Does the faculty cover topics in enough depth?</label>
+                <div class="radio-group">
+                    <label class="radio-label always">
+                        <input type="radio" name="approachable" value="Always" required>
+                        <span>Always</span>
+                        <div class="checkmark">✓</div>
+                        <div class="background"></div>
+                    </label>
+                    <label class="radio-label usually">
+                        <input type="radio" name="approachable" value="Usually">
+                        <span>Usually</span>
+                        <div class="checkmark">✓</div>
+                        <div class="background"></div>
+                    </label>
+                    <label class="radio-label sometimes">
+                        <input type="radio" name="approachable" value="Sometimes">
+                        <span>Sometimes</span>
+                        <div class="checkmark">✓</div>
+                        <div class="background"></div>
+                    </label>
+                    <label class="radio-label never">
+                        <input type="radio" name="approachable" value="Never">
+                        <span>Never</span>
+                        <div class="checkmark">✓</div>
+                        <div class="background"></div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Are helpful learning resources provided by the faculty?</label>
+                <div class="radio-group">
+                    <label class="radio-label excellent">
+                        <input type="radio" name="knowledge" value="Excellent" required>
+                        <span>Excellent</span>
+                        <div class="checkmark">✓</div>
+                        <div class="background"></div>
+                    </label>
+                    <label class="radio-label good">
+                        <input type="radio" name="knowledge" value="Good">
+                        <span>Good</span>
+                        <div class="checkmark">✓</div>
+                        <div class="background"></div>
+                    </label>
+                    <label class="radio-label average">
+                        <input type="radio" name="knowledge" value="Average">
+                        <span>Average</span>
+                        <div class="checkmark">✓</div>
+                        <div class="background"></div>
+                    </label>
+                    <label class="radio-label poor">
+                        <input type="radio" name="knowledge" value="Poor">
+                        <span>Poor</span>
+                        <div class="checkmark">✓</div>
+                        <div class="background"></div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="rating-container">
+                <span class="rating-label">Assignment Rating:</span>
+                <div class="rating-stars">
+                    <span class="star" data-rating="1">★</span>
+                    <span class="star" data-rating="2">★</span>
+                    <span class="star" data-rating="3">★</span>
+                    <span class="star" data-rating="4">★</span>
+                    <span class="star" data-rating="5">★</span>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Additional Comments:</label>
+                <textarea id="comments" placeholder="Please share any additional feedback or suggestions..." rows="4"></textarea>
+            </div>
+        `;
+        
+        container.appendChild(facultyDiv);
+        
+        // Initialize star ratings
+        const stars = document.querySelectorAll('.star');
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                const rating = parseInt(star.getAttribute('data-rating'));
+                
+                // Reset all stars
+                stars.forEach(s => s.classList.remove('active'));
+                
+                // Activate stars up to the clicked one
+                for (let i = 0; i < rating; i++) {
+                    stars[i].classList.add('active');
+                }
+                
+                // Store the rating value
+                document.querySelector('.rating-stars').setAttribute('data-selected-rating', rating);
+            });
+        });
+    }
+    
+    function handleNextOrSubmit() {
+        const errorMsg = document.getElementById('errorMessage');
+        
+        // Get current faculty feedback data
+        const facultyId = document.querySelector('.faculty-item').getAttribute('data-faculty-id');
+        
+        // Get methodology rating
+        const methodologyValue = document.querySelector('input[name="methodology"]:checked')?.value;
+        
+        // Get approachability rating
+        const approachableValue = document.querySelector('input[name="approachable"]:checked')?.value;
+        
+        // Get knowledge rating
+        const knowledgeValue = document.querySelector('input[name="knowledge"]:checked')?.value;
+        
+        // Get star rating
+        const starRating = document.querySelector('.rating-stars').getAttribute('data-selected-rating');
+        
+        // Get comments
+        const comments = document.querySelector('#comments').value;
+        
+        // Validate required fields
+        if (!methodologyValue || !approachableValue || !knowledgeValue || !starRating) {
+            errorMsg.textContent = 'Please complete all required fields.';
+            return;
+        }
+        
+        // Clear any previous error messages
+        errorMsg.textContent = '';
+        
+        // Add feedback for this faculty
+        collectedFeedback.push({
+            facultyId: facultyData[currentFacultyIndex].id,
+            name: facultyData[currentFacultyIndex].username,
+            subject: facultyData[currentFacultyIndex].subject,
+            teach: valueToNumber(methodologyValue),
+            depth: valueToNumber(knowledgeValue),
+            resource: valueToNumber(approachableValue),
+            assignment: parseInt(starRating),
+            comments: comments || ''
+        });
+        
+        // Check if this was the last faculty
+        if (currentFacultyIndex === facultyData.length - 1) {
+            // Submit all feedback
+            submitAllFeedback();
+        } else {
+            // Move to the next faculty
+            currentFacultyIndex++;
+            updateProgress(currentFacultyIndex, facultyData.length);
+            displayCurrentFaculty();
+        }
+    }
+    
+    function updateProgress(current, total) {
+        const progressBar = document.getElementById('progress');
+        const counter = document.getElementById('faculty-counter');
+        
+        const percentage = (current / total) * 100;
+        progressBar.style.width = `${percentage}%`;
+        counter.textContent = `Faculty ${current + 1} of ${total}`;
+    }
+    
+    function valueToNumber(value) {
+        // Convert text ratings to numbers
+        switch(value) {
+            case 'Excellent': return 5;
+            case 'Good': return 4;
+            case 'Average': return 3;
+            case 'Poor': return 2;
+            case 'Always': return 5;
+            case 'Usually': return 4;
+            case 'Sometimes': return 3;
+            case 'Never': return 2;
+            default: return 3;
+        }
+    }
+    
+    function submitAllFeedback() {
+        const errorMsg = document.getElementById('errorMessage');
+        
+        // Log what we're sending for debugging
+        console.log("Sending data:", {
+            feedbackId: feedbackId,
+            feedback: collectedFeedback
         });
 
-        function displayFaculty(facultyData) {
-            const container = document.getElementById('faculty-container');
-            
-            // Clear the container
-            container.innerHTML = '';
-            
-            // Create elements for each faculty member
-            facultyData.forEach((faculty, index) => {
-                const facultyDiv = document.createElement('div');
-                facultyDiv.className = 'faculty-item';
-                facultyDiv.setAttribute('data-faculty-id', faculty._id);
-                
-                facultyDiv.innerHTML = `
-                    <div class="faculty-header">
-                        <h2 class="faculty-name">${faculty.name}</h2>
-                    </div>
-                    <p class="faculty-subject">Subject: ${faculty.subject}</p>
-                    
-                    <div class="input-group">
-                        <label>1. How would you rate the teaching methodology?</label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" name="methodology-${index}" value="Excellent" required> Excellent
-                            </label>
-                        </div>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" name="methodology-${index}" value="Good"> Good
-                            </label>
-                        </div>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" name="methodology-${index}" value="Average"> Average
-                            </label>
-                        </div>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" name="methodology-${index}" value="Poor"> Poor
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>2. Is the faculty approachable for doubts and clarifications?</label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" name="approachable-${index}" value="Always" required> Always
-                            </label>
-                        </div>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" name="approachable-${index}" value="Usually"> Usually
-                            </label>
-                        </div>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" name="approachable-${index}" value="Sometimes"> Sometimes
-                            </label>
-                        </div>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" name="approachable-${index}" value="Never"> Never
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>3. How would you rate the faculty's subject knowledge?</label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" name="knowledge-${index}" value="Excellent" required> Excellent
-                            </label>
-                        </div>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" name="knowledge-${index}" value="Good"> Good
-                            </label>
-                        </div>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" name="knowledge-${index}" value="Average"> Average
-                            </label>
-                        </div>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="radio" name="knowledge-${index}" value="Poor"> Poor
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="rating-container">
-                        <span class="rating-label">Overall Rating:</span>
-                        <div class="rating-stars" data-faculty-index="${index}">
-                            <span class="star" data-rating="1">★</span>
-                            <span class="star" data-rating="2">★</span>
-                            <span class="star" data-rating="3">★</span>
-                            <span class="star" data-rating="4">★</span>
-                            <span class="star" data-rating="5">★</span>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>Additional Comments:</label>
-                        <textarea data-faculty-index="${index}" placeholder="Please share any additional feedback or suggestions..." rows="4"></textarea>
-                    </div>
-                `;
-                
-                container.appendChild(facultyDiv);
-            });
-
-            // Initialize star ratings
-            document.querySelectorAll('.rating-stars').forEach(ratingGroup => {
-                const stars = ratingGroup.querySelectorAll('.star');
-                
-                stars.forEach(star => {
-                    star.addEventListener('click', () => {
-                        const rating = parseInt(star.getAttribute('data-rating'));
-                        
-                        // Reset all stars
-                        stars.forEach(s => s.classList.remove('active'));
-                        
-                        // Activate stars up to the clicked one
-                        for (let i = 0; i < rating; i++) {
-                            stars[i].classList.add('active');
-                        }
-                        
-                        // Store the rating value
-                        ratingGroup.setAttribute('data-selected-rating', rating);
-                    });
+        fetch('/feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                feedbackId: feedbackId,
+                feedback: collectedFeedback
+            }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(`Failed to submit feedback: ${errorData.message || 'Unknown error'}`);
                 });
-            });
-        }
-
-        function submitFeedback() {
-            const facultyItems = document.querySelectorAll('.faculty-item');
-            const feedbackData = [];
-            let isValid = true;
-            const errorMsg = document.getElementById('errorMessage');
+            }
+            return response.text();
+        })
+        .then(() => {
+            // Clears all localStorage items
+            localStorage.clear();
             
-            facultyItems.forEach((item, index) => {
-                const facultyId = item.getAttribute('data-faculty-id');
-                
-                // Get methodology rating
-                const methodologyValue = document.querySelector(`input[name="methodology-${index}"]:checked`)?.value;
-                
-                // Get approachability rating
-                const approachableValue = document.querySelector(`input[name="approachable-${index}"]:checked`)?.value;
-                
-                // Get knowledge rating
-                const knowledgeValue = document.querySelector(`input[name="knowledge-${index}"]:checked`)?.value;
-                
-                // Get star rating
-                const starRating = document.querySelector(`.rating-stars[data-faculty-index="${index}"]`)?.getAttribute('data-selected-rating');
-                
-                // Get comments
-                const comments = document.querySelector(`textarea[data-faculty-index="${index}"]`)?.value;
-                
-                // Validate required fields
-                if (!methodologyValue || !approachableValue || !knowledgeValue || !starRating) {
-                    isValid = false;
-                    errorMsg.textContent = `Please complete all required fields for all faculty members.`;
-                    return;
-                }
-                
-                // Add feedback data for this faculty
-                feedbackData.push({
-                    facultyId,
-                    methodology: methodologyValue,
-                    approachable: approachableValue,
-                    knowledge: knowledgeValue,
-                    rating: starRating,
-                    comments: comments || ''
-                });
-            });
-            
-            if (!isValid) return;
-            
-            // Clear any previous error messages
-            errorMsg.textContent = '';
-            
-            // Send feedback data to server
-            fetch('/submit-feedback', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ feedback: feedbackData }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Clear stored data
-                    localStorage.removeItem('facultyData');
-                    localStorage.removeItem('section');
-                    
-                    // Show success message
-                    document.querySelector('.registration-container').innerHTML = `
-                        <h1>Thank You!</h1>
-                        <div class="success-message">
-                            <p>Your feedback has been submitted successfully.</p>
-                        </div>
-                        <button onclick="window.location.href='/student'">Back to Home</button>
-                    `;
-                } else {
-                    errorMsg.textContent = data.message || 'An error occurred while submitting your feedback.';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                errorMsg.textContent = 'A server error occurred. Please try again later.';
-            });
-        }
-    </script>
+            document.querySelector('.registration-container').innerHTML = `
+                <h1>Thank You!</h1>
+                <div class="success-message">
+                    <p>Your feedback has been submitted successfully.</p>
+                </div>
+                <button class="btn" onclick="window.location.href='/student'">Back to Home</button>
+            `;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            errorMsg.textContent = error.message || 'A server error occurred. Please try again later.';
+        });
+    }
+});
+</script>
 </body>
 </html>
