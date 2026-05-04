@@ -91,8 +91,8 @@ feedback-management-system/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/MOHAN799S/feedback-management-system.git
-cd feedback-management-system
+git clone https://github.com/MOHAN799S/feedback.git
+cd feedback
 ```
 
 ### 2. Install Dependencies
