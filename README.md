@@ -240,8 +240,3 @@ Roles tested manually via Postman. Test credentials (after seeding):
 **Sangidi Mohan Lakshman**  
 [github.com/MOHAN799S](https://github.com/MOHAN799S) · [linkedin.com/in/mohan-lakshman-sangidi](https://www.linkedin.com/in/mohan-lakshman-sangidi-287322256/) · mohansangidi@gmail.com
 
----
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
