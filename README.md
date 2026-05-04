@@ -37,49 +37,6 @@ A full-stack web application for managing faculty performance feedback in academ
 
 ---
 
-## 📁 Project Structure
-
-```
-feedback-management-system/
-├── client/
-│   ├── admin/
-│   │   ├── dashboard.html
-│   │   ├── manage-faculty.html
-│   │   └── manage-students.html
-│   ├── faculty/
-│   │   └── dashboard.html
-│   ├── student/
-│   │   └── feedback-form.html
-│   └── shared/
-│       ├── style.css
-│       └── auth.js
-├── server/
-│   ├── config/
-│   │   └── db.js
-│   ├── controllers/
-│   │   ├── adminController.js
-│   │   ├── facultyController.js
-│   │   └── studentController.js
-│   ├── middleware/
-│   │   └── authMiddleware.js
-│   ├── models/
-│   │   ├── User.js
-│   │   ├── Faculty.js
-│   │   ├── Feedback.js
-│   │   └── Session.js
-│   ├── routes/
-│   │   ├── adminRoutes.js
-│   │   ├── facultyRoutes.js
-│   │   └── studentRoutes.js
-│   └── server.js
-├── .env.example
-├── .gitignore
-├── package.json
-└── README.md
-```
-
----
-
 ## ⚙️ Getting Started
 
 ### Prerequisites
